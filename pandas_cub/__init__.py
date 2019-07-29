@@ -71,7 +71,14 @@ class DataFrame:
         -------
         int: the number of rows in the dataframe
         """
-        pass
+        for value in self._data.values():
+        	return len(value)  
+
+       	"""alternative way
+       	
+       	return len(next(iter(self._data.values()))) 
+
+       	""" 	
 
     @property
     def columns(self):
@@ -84,8 +91,12 @@ class DataFrame:
         -------
         list of column names
         """
-        pass
+        #we pass a dict thru the list and we get
+        #the keys by default in python
+        #the keys are the columns
+        return list(self._data)
 
+ 
     @columns.setter
     def columns(self, columns):
         """
@@ -100,7 +111,21 @@ class DataFrame:
         -------
         None
         """
-        pass
+        if not isinstance(columns, list):
+        	raise TypeError('columns must be a list')
+
+       	if len(columns) != len(self._data):
+       		raise ValueError("new columns must be same length as df")
+
+       	for col in columns:
+       		if not isinstance(col,str):
+       			raise TypeError("All Column must be strings")
+
+       	#duplicate column names
+       	if len(columns) != len(set(columns)):
+       		raise ValueError('Your columns have duplicates, this is not allowed. ')   
+
+       	self._data = dict(zip(columns, self._data.values()))  
 
     @property
     def shape(self):
@@ -109,10 +134,14 @@ class DataFrame:
         -------
         two-item tuple of number of rows and columns
         """
-        pass
+        #return (num of rows, num of columns)
+
+        return ( len(self), len(self._data) )
 
     def _repr_html_(self):
         """
+        SPECIAL METHOD - only for ipython jupyter nb
+
         Used to create a string of HTML to nicely display the DataFrame
         in a Jupyter Notebook. Different string formatting is used for
         different data types.
@@ -143,16 +172,70 @@ class DataFrame:
             </tbody>
         </table>
         """
-        pass
+        html = '<table><thead><tr><th></th>'
+        for col in self.columns:
+            html += f"<th>{col:10}</th>"
+
+        html += '</tr></thead>'
+        html += "<tbody>"
+
+        only_head = False
+        num_head = 10
+        num_tail = 10
+        if len(self) <= 20:
+            only_head = True
+            num_head = len(self)
+
+        for i in range(num_head):
+            html += f'<tr><td><strong>{i}</strong></td>'
+            for col, values in self._data.items():
+                kind = values.dtype.kind
+                if kind == 'f':
+                    html += f'<td>{values[i]:10.3f}</td>'
+                elif kind == 'b':
+                    html += f'<td>{values[i]}</td>'
+                elif kind == 'O':
+                    v = values[i]
+                    if v is None:
+                        v = 'None'
+                    html += f'<td>{v:10}</td>'
+                else:
+                    html += f'<td>{values[i]:10}</td>'
+            html += '</tr>'
+
+        if not only_head:
+            html += '<tr><strong><td>...</td></strong>'
+            for i in range(len(self.columns)):
+                html += '<td>...</td>'
+            html += '</tr>'
+            for i in range(-num_tail, 0):
+                html += f'<tr><td><strong>{len(self) + i}</strong></td>'
+                for col, values in self._data.items():
+                    kind = values.dtype.kind
+                    if kind == 'f':
+                        html += f'<td>{values[i]:10.3f}</td>'
+                    elif kind == 'b':
+                        html += f'<td>{values[i]}</td>'
+                    elif kind == 'O':
+                        v = values[i]
+                        if v is None:
+                            v = 'None'
+                        html += f'<td>{v:10}</td>'
+                    else:
+                        html += f'<td>{values[i]:10}</td>'
+                html += '</tr>'
+
+        html += '</tbody></table>'
+        return html
 
     @property
     def values(self):
         """
         Returns
         -------
-        A single 2D NumPy array of the underlying data
+        A single 2-D NumPy array of the underlying data
         """
-        pass
+        return np.column_stack(list(self._data.values()))
 
     @property
     def dtypes(self):
@@ -163,7 +246,16 @@ class DataFrame:
         their data type in the other
         """
         DTYPE_NAME = {'O': 'string', 'i': 'int', 'f': 'float', 'b': 'bool'}
-        pass
+        col_names = np.array(list(self._data.keys()))
+
+        dtypes = [DTYPE_NAME[value.dtype.kind] for value in self._data.values()]
+        #convert list to numpy arr as thats is wht
+        #the DataFrame Constructor requires
+        dtypes = np.array(dtypes)
+
+       	new_data = {'Column Name':col_names, "Data Type":dtypes}
+       	
+        return DataFrame(new_data)
 
     def __getitem__(self, item):
         """
