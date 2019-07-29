@@ -27,7 +27,7 @@ class DataFrame:
 
         # Allow for special methods for strings
         self.str = StringMethods(self)
-        self._add_docs()
+        self._add_docs()  
 
     def _check_input_types(self, data):
         if not isinstance(data, dict):
@@ -44,7 +44,15 @@ class DataFrame:
                 raise ValueError("Values of 'Data' must be a one-dimensional numpy array")
 
     def _check_array_lengths(self, data):
-        pass
+        #each column in the df is a value in the dict
+
+        for i, value in enumerate(data.values()):
+            if i==0:
+                length = len(value)
+            
+            elif length!= len(value):
+                raise ValueError("All arrays must be of same length as an array is a column in the df and all columns must have the same length")        
+
 
     def _convert_unicode_to_object(self, data):
         new_data = {}
