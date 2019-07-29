@@ -30,7 +30,18 @@ class DataFrame:
         self._add_docs()
 
     def _check_input_types(self, data):
-        pass
+        if not isinstance(data, dict):
+            raise TypeError('Data must be a Dictionary') 
+
+        for key,value in data.items():
+            if not isinstance(key, str):
+                raise TypeError('Keys of "data" must be strs')
+
+            if not isinstance(value, np.ndarray):
+                raise TypeError("Values of 'data' must be a numpy arr") 
+
+            if value.ndim !=1:
+                raise ValueError("Values of 'Data' must be a one-dimensional numpy array")
 
     def _check_array_lengths(self, data):
         pass
