@@ -254,7 +254,7 @@ class DataFrame:
         dtypes = np.array(dtypes)
 
        	new_data = {'Column Name':col_names, "Data Type":dtypes}
-       	
+
         return DataFrame(new_data)
 
     def __getitem__(self, item):
@@ -271,11 +271,34 @@ class DataFrame:
         -------
         A subset of the original DataFrame
         """
-        pass
+        if isinstance(item, str):
+        	return DataFrame({item: self._data[item]})
+        if isinstance(item, list):
+        	return DataFrame({col: self._data[col] for col in item})
+
+        if isinstance(item, DataFrame):
+        	if item.shape!=1:
+        		raise ValueError("item must be a one-column DF (as a filter))")
+       		arr = next(iter(item._data.values()))
+        	if arr.dtype.kind != 'b':
+        		raise ValueError('item must be a one-d boolean DF')
+
+        	return DataFrame({col: value[arr] for col, value in self._data.items()})	
+
+
+        if isinstance(item, tuple):
+        	return self._getitem_tuple(item)
+
+        raise TypeError("you must pass either a str, list, DF or a tuple")
+
+
+
 
     def _getitem_tuple(self, item):
         # simultaneous selection of rows and cols -> df[rs, cs]
-        pass
+        if len(item) !=2:
+        	raise ValueError("item tuple must have length 2")
+
 
     def _ipython_key_completions_(self):
         # allows for tab completion when doing df['c
