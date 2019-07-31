@@ -309,7 +309,8 @@ class DataFrame:
         
         elif isinstance(col_selection,str):
         	col_selection = [col_selection]
-        	
+
+
 
         new_data={}
         for col in col_selection:
@@ -338,7 +339,7 @@ class DataFrame:
         -------
         DataFrame
         """
-        pass
+        self[:n, :]
 
     def tail(self, n=5):
         """
@@ -352,7 +353,7 @@ class DataFrame:
         -------
         DataFrame
         """
-        pass
+        self[n:, :]
 
     #### Aggregation Methods ####
 
